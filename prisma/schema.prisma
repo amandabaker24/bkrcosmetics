@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SurveyStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum VoteSource {
+  SURVEY
+  STANDALONE
+}
+
+enum AdminRole {
+  ADMIN
+}
+
+model SurveySession {
+  id                 String           @id @default(uuid())
+  anonymousSessionId String
+  status             SurveyStatus     @default(IN_PROGRESS)
+  startedAt          DateTime         @default(now())
+  completedAt        DateTime?
+  source             String
+  campaign           String?
+  surveyVersion      String
+  responses          SurveyResponse[]
+  vote               ProductVote?
+
+  @@unique([anonymousSessionId, surveyVersion])
+  @@index([status, completedAt])
+  @@index([startedAt, source])
+}
+
+model SurveyResponse {
+  id              String        @id @default(uuid())
+  surveySessionId String
+  questionKey     String
+  answerJson      Json
+  createdAt       DateTime      @default(now())
+  session         SurveySession @relation(fields: [surveySessionId], references: [id], onDelete: Cascade)
+
+  @@unique([surveySessionId, questionKey])
+}
+
+model ProductConcept {
+  id            String            @id @default(uuid())
+  name          String
+  slug          String            @unique
+  description   String
+  imageUrl      String
+  proposedPrice Decimal           @db.Decimal(7, 2)
+  status        String
+  createdAt     DateTime          @default(now())
+  votes         ProductVote[]
+  feedback      ProductFeedback[]
+}
+
+model ProductVote {
+  id                 String         @id @default(uuid())
+  productConceptId   String
+  anonymousSessionId String
+  surveySessionId    String?        @unique
+  ballotKey          String?        @unique
+  source             VoteSource
+  createdAt          DateTime       @default(now())
+  concept            ProductConcept @relation(fields: [productConceptId], references: [id], onDelete: Restrict)
+  survey             SurveySession? @relation(fields: [surveySessionId], references: [id], onDelete: Cascade)
+
+  @@unique([productConceptId, anonymousSessionId, source])
+  @@index([source, createdAt])
+}
+
+model WaitlistSubscriber {
+  id                 String    @id @default(uuid())
+  firstName          String?
+  email              String    @unique
+  marketingConsent   Boolean
+  consentVersion     String
+  consentTimestamp   DateTime
+  source             String
+  campaign           String?
+  createdAt          DateTime  @default(now())
+  confirmedAt        DateTime?
+  unsubscribedAt     DateTime?
+  confirmationHash   String?   @unique
+  confirmationExpiry DateTime?
+  unsubscribeHash    String    @unique
+
+  @@index([createdAt, source])
+}
+
+model ProductFeedback {
+  id                 String         @id @default(uuid())
+  productConceptId   String
+  anonymousSessionId String
+  purchaseIntent     String
+  expectedPrice      Decimal?       @db.Decimal(7, 2)
+  feedback           String
+  purchaseBarrier    String?
+  createdAt          DateTime       @default(now())
+  concept            ProductConcept @relation(fields: [productConceptId], references: [id], onDelete: Restrict)
+
+  @@unique([productConceptId, anonymousSessionId])
+  @@index([createdAt])
+}
+
+model AdminUser {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  role         AdminRole      @default(ADMIN)
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  tokenHash String    @id
+  userId    String
+  expiresAt DateTime
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RateLimit {
+  key       String   @id
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

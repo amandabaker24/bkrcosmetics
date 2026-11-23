@@ -1,0 +1,6 @@
+import "server-only";
+import { PrismaClient } from "@prisma/client";
+
+const globalDatabase = globalThis as typeof globalThis & { prisma?: PrismaClient };
+export const db = globalDatabase.prisma ?? new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalDatabase.prisma = db;
