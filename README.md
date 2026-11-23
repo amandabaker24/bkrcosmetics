@@ -43,7 +43,22 @@ Run `npm run typecheck` for type checking, and `npm run build` for a production 
 - Set `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` to enable opt-in usage analytics. Keep them unset to omit analytics. Campaign attribution for research reporting stays in PostgreSQL.
 - Update concept prices and ingredient ideas when the brand team supplies final details. Finalize the privacy and terms drafts, including retention periods and the operating entity, before a public launch.
 
-The dashboard reports survey and standalone concept votes independently. Survey completion uses matching survey starts as its denominator. Marketing opt-in is calculated among confirmed subscribers who are currently subscribed. CSV exports omit names, email addresses, raw feedback, and anonymous session identifiers.
+## Resend waitlist emails
+
+In Resend, verify your sending domain and create an API key with **Sending access**. For local development add the entries below to your existing `.env` in the project root, then restart `npm run dev`. On Vercel, enter the same names and real values under **Settings → Environment Variables** for Production, set `APP_URL` to the site's public HTTPS origin, and redeploy. Keep the API key in server environment variables.
+
+```dotenv
+RESEND_API_KEY=re_your_key_here
+EMAIL_FROM="bkr <hello@mail.yourdomain.com>"
+MARKETING_POSTAL_ADDRESS="Your actual business mailing address"
+CRON_SECRET=your_separate_random_secret
+```
+
+Use an `EMAIL_FROM` address on the domain you verified with Resend. The mailing address appears in the marketing welcome email footer. Generate `CRON_SECRET` separately with `openssl rand -hex 32`.
+
+Apply `npm run db:deploy` to the target database before serving the updated app. When someone joins, bkr sends an email confirmation. The marketing welcome email is queued after confirmation if they checked the marketing box. It includes a visible unsubscribe link and email-client one-click opt-out. The sender needs a configured mailing address for welcome delivery.
+
+The app attempts the welcome immediately after confirmation. The included Vercel Pro cron retries pending deliveries every 15 minutes when `CRON_SECRET` is set. The database and Resend's idempotency key protect against duplicate welcomes. Automatic retries stop within Resend’s idempotency window. This flow applies to new confirmations.
 
 ## Fountain water
 
@@ -57,7 +72,11 @@ On an existing installation, run `npm run db:deploy` followed by `npm run db:see
 
 The Product Lab records one changeable priority vote per browser. The dashboard reports Product Lab ballots separately from survey votes. Product segment rankings use the share of renewal respondents in each age-range and priority-concern group who chose the concept. A segment needs five responses to rank ahead of smaller samples.
 
+Survey completion uses matching survey starts as its denominator. Marketing opt-in is calculated among confirmed subscribers who are currently subscribed. CSV exports omit names, email addresses, raw feedback, and anonymous session identifiers.
+
 ## Generated photography
+
+- `email/collective-welcome.jpg` — Edit the attached bkr Collective email artwork into a clean photoreal background for the same email. Preserve the rich warm deep burgundy, copper silk or fine translucent petal curls hugging the upper-right and lower-left corners, and glowing golden water ripples across the very bottom quarter. Preserve the softly lit smooth deep burgundy negative space over the upper and middle 75 percent, suitable for ivory text. Remove every letter and all typography, wordmarks, divider graphics, icons, and button borders, filling those areas seamlessly with the original background texture. The center must be unobstructed and dark for live email HTML typography. Full bleed no borders. Same vertical aspect around 5:6, luxury skincare editorial, no people, text or logos.
 
 - `philosophy-terrace-detail.webp` — Refine this exact photograph for bkr. Keep the composition and object positions precisely registered to the reference: same aspect ratio around 1.883:1, same exact camera and geometry, no zoom, no recentering, same four Ionic pedestal faces and objects in the same sizes/locations, same statues at the extreme left and right, same continuous arch, greenery, sky and distant temple. Make the stone and statues appreciably more detailed and sculptural: fine hand-chiseled hair curls and braided strands, deeply modeled cloth folds, gently worn edges, small chips, fine porous champagne travertine grain, fine marble mineral veins, hand-carved architectural scroll relief with crisp sculptural shading, subtle patina and warm raking light that reveals the texture. Preserve clear blank pale fronts on all four pedestals for website text, with subdued texture and no markings that compromise contrast. Preserve the bright blank upper center sky. Remove the narrow white framing strips from both extreme edges by extending the adjacent scene pixels all the way to each edge. Full bleed, absolutely no white border, matte or strip on any edge, no text or new objects. Realistic material detail, no stylization. Keep the layout pixel-aligned so existing text overlays on the four pedestals still work. The four detail crops reuse the same image for mobile.
 

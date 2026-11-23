@@ -92,8 +92,12 @@ model WaitlistSubscriber {
   confirmationHash   String?   @unique
   confirmationExpiry DateTime?
   unsubscribeHash    String    @unique
+  welcomeQueuedAt    DateTime?
+  welcomeAttemptedAt DateTime?
+  welcomeSentAt      DateTime?
 
   @@index([createdAt, source])
+  @@index([welcomeQueuedAt])
 }
 
 model ProductFeedback {

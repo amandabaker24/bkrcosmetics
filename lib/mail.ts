@@ -1,6 +1,8 @@
 import "server-only";
 import { Resend } from "resend";
 import { RequestError } from "./security";
+import { welcomeUnsubscribeToken } from "./waitlist-unsubscribe";
+import { collectiveWelcome } from "./welcome-email";
 
 export function mailConfiguration() {
   const { RESEND_API_KEY, EMAIL_FROM, APP_URL } = process.env;
@@ -17,4 +19,21 @@ export async function sendConfirmation(configuration: ReturnType<typeof mailConf
     text: `Thank you for your interest in bkr. Confirm your email address for the founding community:\n\n${base}/community/confirm#${confirmation}\n\nThis link expires in 48 hours. You can manage your email preferences here:\n${base}/unsubscribe#${unsubscribe}`,
   });
   if (response.error) throw new RequestError("We couldn’t send your confirmation email. Please try again.", 503);
+}
+
+export type WelcomeRecipient = { id: string; email: string; unsubscribeHash: string };
+
+export function sendWelcome(configuration: ReturnType<typeof mailConfiguration>, recipient: WelcomeRecipient, postalAddress: string) {
+  const { resend, from, base } = configuration;
+  const token = welcomeUnsubscribeToken(recipient.id, recipient.unsubscribeHash);
+  const unsubscribe = `${base}/unsubscribe#${token}`;
+  const oneClick = new URL("/api/waitlist/unsubscribe", base);
+  oneClick.searchParams.set("token", token);
+
+  return resend.emails.send({
+    from,
+    to: recipient.email,
+    ...collectiveWelcome(base, unsubscribe, postalAddress),
+    headers: { "List-Unsubscribe": `<${oneClick.href}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+  }, { idempotencyKey: `bkr-waitlist-welcome/${recipient.id}` });
 }

@@ -25,6 +25,8 @@ export function Header() {
     document.addEventListener("keydown", close);
     return () => document.removeEventListener("keydown", close);
   }, [open]);
+  if (path === "/admin" || path.startsWith("/admin/")) return null;
+
   return <header className="site-header">
     <div className="nav-shell">
       <Wordmark />

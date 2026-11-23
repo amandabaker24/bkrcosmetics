@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/waitlist-welcome", "schedule": "*/15 * * * *" }
+  ]
+}

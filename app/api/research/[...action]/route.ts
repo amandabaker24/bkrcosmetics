@@ -1,10 +1,13 @@
 import { Prisma } from "@prisma/client";
+import { after } from "next/server";
 import { type z } from "zod";
 import { db } from "@/lib/db";
 import { assertOrigin, anonymousSession, hashToken, rateLimit, RequestError, secretToken, verifyChallenge } from "@/lib/security";
 import { requestKeySchema, requestSchemas } from "@/lib/requests";
 import { answerSchemas, consentVersion, surveyVersion } from "@/lib/survey";
 import { mailConfiguration, sendConfirmation } from "@/lib/mail";
+import { unsubscribeWaitlist } from "@/lib/waitlist-unsubscribe";
+import { deliverWaitlistWelcome } from "@/lib/waitlist-welcome";
 
 type Handlers = { [K in keyof typeof requestSchemas]: (data: z.infer<(typeof requestSchemas)[K]>, headers: Headers) => Promise<object> };
 const hour = 3600000;
@@ -137,20 +140,30 @@ const handlers: Handlers = {
   },
   async "waitlist/confirm"({ token }, headers) {
     await rateLimit(headers, "email-confirm", 30, hour);
-    const changed = await db.waitlistSubscriber.updateMany({
-      where: { confirmationHash: hashToken(token), confirmationExpiry: { gt: new Date() }, unsubscribedAt: null },
-      data: { confirmedAt: new Date(), confirmationHash: null, confirmationExpiry: null },
+    const now = new Date();
+    const welcomeId = await db.$transaction(async tx => {
+      const [subscriber] = await tx.waitlistSubscriber.updateManyAndReturn({
+        where: { confirmationHash: hashToken(token), confirmationExpiry: { gt: now }, unsubscribedAt: null },
+        data: { confirmedAt: now, confirmationHash: null, confirmationExpiry: null },
+        select: { id: true, marketingConsent: true, welcomeSentAt: true },
+      });
+      if (!subscriber) {
+        throw new RequestError("This link has expired or has already been used. You can request a new link from the community page.", 404);
+      }
+      if (!subscriber.marketingConsent || subscriber.welcomeSentAt) return null;
+
+      await tx.waitlistSubscriber.update({
+        where: { id: subscriber.id },
+        data: { welcomeQueuedAt: now, welcomeAttemptedAt: null },
+      });
+      return subscriber.id;
     });
-    if (!changed.count) throw new RequestError("This link has expired or has already been used. You can request a new link from the community page.", 404);
+    if (welcomeId) after(async () => { await deliverWaitlistWelcome(welcomeId); });
     return { ok: true };
   },
   async "waitlist/unsubscribe"({ token }, headers) {
     await rateLimit(headers, "email-unsubscribe", 30, hour);
-    const result = await db.waitlistSubscriber.updateMany({
-      where: { unsubscribeHash: hashToken(token), unsubscribedAt: null },
-      data: { marketingConsent: false, unsubscribedAt: new Date(), confirmationHash: null, confirmationExpiry: null },
-    });
-    if (!result.count && !(await db.waitlistSubscriber.count({ where: { unsubscribeHash: hashToken(token) } }))) {
+    if (!(await unsubscribeWaitlist(token))) {
       throw new RequestError("This unsubscribe link is invalid. Please contact us for help.", 404);
     }
     return { ok: true };

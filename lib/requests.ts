@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { answerSchemas, answersSchema, questionKeys } from "./survey";
 import concepts from "./concepts.json";
+import { unsubscribeTokenSchema } from "./waitlist-tokens";
 
 export const emailSchema = z.string().trim().toLowerCase().max(254).pipe(z.email());
 const tracking = z.object({
@@ -31,7 +32,7 @@ export const requestSchemas = {
     tracking, ...challenge,
   }).strict(),
   "waitlist/confirm": z.object({ token }).strict(),
-  "waitlist/unsubscribe": z.object({ token }).strict(),
+  "waitlist/unsubscribe": z.object({ token: unsubscribeTokenSchema }).strict(),
   "contact": z.object({
     email: emailSchema, name: z.string().trim().min(1).max(80), message: z.string().trim().min(5).max(2000), ...challenge,
   }).strict(),
