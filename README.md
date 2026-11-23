@@ -58,7 +58,7 @@ Use an `EMAIL_FROM` address on the domain you verified with Resend. The mailing 
 
 Apply `npm run db:deploy` to the target database before serving the updated app. When someone joins, bkr sends an email confirmation. The marketing welcome email is queued after confirmation if they checked the marketing box. It includes a visible unsubscribe link and email-client one-click opt-out. The sender needs a configured mailing address for welcome delivery.
 
-The app attempts the welcome immediately after confirmation. The included Vercel Pro cron retries pending deliveries every 15 minutes when `CRON_SECRET` is set. The database and Resend's idempotency key protect against duplicate welcomes. Automatic retries stop within Resend’s idempotency window. This flow applies to new confirmations.
+The app attempts the welcome immediately after confirmation. With `CRON_SECRET` set, the Vercel cron checks for pending deliveries once a day during the 14:00 UTC hour, which fits the Hobby schedule. Retries stop within Resend’s idempotency window to protect against duplicate welcomes, so some failed sends may expire before the daily check. This flow applies to new confirmations.
 
 ## Fountain water
 

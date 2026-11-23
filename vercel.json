@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/waitlist-welcome", "schedule": "*/15 * * * *" }
+    { "path": "/api/cron/waitlist-welcome", "schedule": "0 14 * * *" }
   ]
 }
