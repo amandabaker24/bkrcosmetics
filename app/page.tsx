@@ -55,9 +55,9 @@ export default function Home() {
           <ScrollParallax><Image src="/images/texture.webp" alt="Pearlescent gel cream with soft ridges on champagne stone" fill sizes="(max-width: 760px) 100vw, 48vw" /></ScrollParallax>
         </Reveal>
         <Reveal delay={.1}>
-          <Eyebrow>From texture to formulation</Eyebrow>
-          <h3>Curiosity, followed by testing.</h3>
-          <p>The Fountain of Youth is a metaphor for curiosity about how we care for skin over time. We’ll use customer feedback to shape what we formulate and test, and share what we learn along the way.</p>
+          <Eyebrow>Our approach to formulation</Eyebrow>
+          <h3>How renewal takes shape.</h3>
+          <p>We’re exploring how to care for skin as it changes over time. What you share about your routine helps us decide which formulas to develop and test. We’ll share what we learn along the way.</p>
           <Button asChild variant="text"><Link href="/our-process">Explore Our Process</Link></Button>
         </Reveal>
       </div>

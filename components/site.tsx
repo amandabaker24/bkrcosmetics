@@ -12,6 +12,12 @@ const navigation = [
   ["Product Lab", "/product-lab"], ["Our Process", "/our-process"],
 ];
 
+function scrollToDiscoveryTop(href: string) {
+  if (href === "/skin-discovery" && window.location.pathname === href) {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+}
+
 function Wordmark() {
   return <Link href="/" className="wordmark" aria-label="bkr home">bkr</Link>;
 }
@@ -31,13 +37,13 @@ export function Header() {
     <div className="nav-shell">
       <Wordmark />
       <nav aria-label="Primary" className="desktop-nav">
-        {navigation.map(([label, href]) => <Link key={href} href={href} aria-current={path === href ? "page" : undefined}>{label}</Link>)}
+        {navigation.map(([label, href]) => <Link key={href} href={href} onNavigate={() => scrollToDiscoveryTop(href)} aria-current={path === href ? "page" : undefined}>{label}</Link>)}
       </nav>
       <Button asChild variant="outline" className="nav-cta"><Link href="/community">Join the Waitlist</Link></Button>
       <button type="button" className="menu-toggle" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
     </div>
     <nav id="mobile-nav" aria-label="Mobile" className="mobile-nav" hidden={!open}>
-      {navigation.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} aria-current={path === href ? "page" : undefined}>{label}</Link>)}
+      {navigation.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} onNavigate={() => scrollToDiscoveryTop(href)} aria-current={path === href ? "page" : undefined}>{label}</Link>)}
       <Link href="/community" onClick={() => setOpen(false)}>Join the Waitlist</Link>
     </nav>
   </header>;
@@ -47,7 +53,7 @@ export function Footer() {
   return <footer className="site-footer"><div className="wrap">
     <div className="footer-main">
       <div><Wordmark /><p>The Science of Renewal.</p></div>
-      <nav aria-label="Footer">{[...navigation, ["Founding Community", "/community"], ["Contact", "/contact"]].map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
+      <nav aria-label="Footer">{[...navigation, ["Founding Community", "/community"], ["Contact", "/contact"]].map(([label, href]) => <Link key={href} href={href} onNavigate={() => scrollToDiscoveryTop(href)}>{label}</Link>)}</nav>
     </div>
     <div className="footer-bottom"><span>© {new Date().getFullYear()} bkr</span><nav aria-label="Legal"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/unsubscribe">Email preferences</Link></nav></div>
   </div></footer>;

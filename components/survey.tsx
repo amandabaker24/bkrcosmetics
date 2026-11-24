@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { Sparkle } from "lucide-react";
 import { Button } from "./ui/button";
 import { useChallenge } from "./challenge";
@@ -29,13 +29,18 @@ export function DiscoverySurvey() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
+  const previousStage = useRef(stage);
   const challenge = useChallenge();
   const key = questionKeys[step];
   const question = questions[key];
 
-  useEffect(() => {
-    if (stage !== "intro") {
-      heading.current?.focus({ preventScroll: true });
+  useLayoutEffect(() => {
+    const openingSurvey = previousStage.current === "intro";
+    previousStage.current = stage;
+    heading.current?.focus({ preventScroll: true });
+    if (openingSurvey) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else {
       heading.current?.closest("section")?.scrollIntoView({ block: "start" });
     }
   }, [stage, step]);
