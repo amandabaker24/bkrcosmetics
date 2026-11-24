@@ -11,8 +11,8 @@ export default function AboutPage() {
     <section className="wrap grid-two page-body">
       <div className="texture-image"><Image src="/images/texture.webp" alt="Detail of a pearlescent cream texture" fill sizes="(max-width: 760px) 100vw, 48vw" /></div>
       <div className="prose-copy !w-full !m-0"><h2 className="!mt-0">Restore. Refine. Illuminate.</h2>
-        <p>Time is inevitable. How we care for our skin is a choice. Our Fountain of Youth campaign is a metaphor for that curiosity and the care we bring to it.</p>
-        <p>We’re talking with customers to learn what’s missing from their routines. As concepts move into development, we’ll share why we’re considering each ingredient, what we plan to test, and what we learn.</p>
+        <p>Skin changes over time. We’re exploring how daily care can support the moisture barrier, soften the look of fine lines, and bring out skin’s natural radiance.</p>
+        <p>What you tell us about your routine helps us decide which formulas to develop. As they take shape, we’ll share why we’re considering each ingredient, what we plan to test, and what we learn.</p>
         <Button asChild><Link href="/skin-discovery">Share Your Skincare Preferences</Link></Button>
       </div>
     </section>
