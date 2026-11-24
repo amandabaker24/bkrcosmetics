@@ -25,9 +25,9 @@ export default function Home() {
     <HeroFountain>
       <div className="hero-copy">
         <Eyebrow>The Science of Renewal</Eyebrow>
-        <h1>In search of the <em>fountain of youth.</em></h1>
-        <p className="hero-subheading">Time is inevitable. How we care for our skin is a choice.</p>
-        <p>Exploring the science of restoration, renewal, and timeless radiance.</p>
+        <h1>In pursuit of <em>renewal.</em></h1>
+        <p className="hero-subheading">Inspired by an age-old pursuit. Informed by modern skin science.</p>
+        <p>A new approach to skin restoration, visible signs of aging, and lasting skin health.</p>
         <div className="hero-actions">
           <Button asChild><Link href="/skin-discovery">Be Part of the Discovery</Link></Button>
           <Button asChild variant="text"><Link href="#vision">Discover Our Vision</Link></Button>
