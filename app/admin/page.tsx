@@ -35,7 +35,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const summary = [
     ["Completed surveys", report.completed],
     ["Survey completion", percent(report.completed, report.started)],
-    ["Active, confirmed subscribers", report.subscribers],
+    ["Active waitlist members", report.subscribers],
     ["Marketing opt-in", percent(report.optedIn, report.subscribers)],
     ["Most requested renewal concept", leaders(report.surveyVotes)],
     ["Most common skin concerns", leaders(report.concerns)],
@@ -67,7 +67,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     </section>
     <div className="metrics">{summary.map(([label, value]) => <div className="surface metric" key={label}><p className="small">{label}</p><strong>{value}</strong></div>)}</div>
     <div className="admin-heading">
-      <p className="small">{report.started} started · {report.pending} pending email confirmation · {report.optedIn} active marketing opt-ins</p>
+      <p className="small">{report.started} started · {report.pending} older signups awaiting confirmation · {report.optedIn} active marketing opt-ins</p>
       <Button asChild variant="outline"><a href={`/api/admin/export${filterQuery ? `?${filterQuery}` : ""}`}>Export Survey CSV</a></Button>
     </div>
     <div className="chart-grid">
@@ -82,7 +82,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       <ResearchChart title="Willingness to Pay" data={report.prices} />
       <ResearchChart title="Texture Preferences" data={report.textures} />
       <ResearchChart title="Survey Completions Over Time" data={report.surveyTimeline} timeline />
-      <ResearchChart title="Confirmed Signups by Signup Date" data={report.waitlistTimeline} timeline />
+      <ResearchChart title="Waitlist Signups Over Time" data={report.waitlistTimeline} timeline />
     </div>
     <section className="surface admin-section">
       <h2>Customer Segments by Product</h2>

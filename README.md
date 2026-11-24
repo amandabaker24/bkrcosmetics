@@ -1,6 +1,6 @@
 # bkr
 
-bkr is a prelaunch skincare site and customer research platform. It collects anonymous survey answers and product concept feedback, runs a confirmed email waitlist, and gives administrators a dashboard for reviewing and exporting research.
+bkr is a prelaunch skincare site and customer research platform. It collects anonymous survey answers and product concept feedback, runs an email waitlist, and gives administrators a dashboard for reviewing and exporting research.
 
 ## Local setup
 
@@ -56,9 +56,9 @@ CRON_SECRET=your_separate_random_secret
 
 Use an `EMAIL_FROM` address on the domain you verified with Resend. The mailing address appears in the marketing welcome email footer. Generate `CRON_SECRET` separately with `openssl rand -hex 32`.
 
-Apply `npm run db:deploy` to the target database before serving the updated app. When someone joins, bkr sends an email confirmation. The marketing welcome email is queued after confirmation if they checked the marketing box. It includes a visible unsubscribe link and email-client one-click opt-out. The sender needs a configured mailing address for welcome delivery.
+Apply `npm run db:deploy` to the target database before serving the updated app. A new signup joins the waitlist immediately and queues one branded welcome email with a visible unsubscribe link and one-click opt-out. The email includes information about future updates only when the signup opted into marketing and `MARKETING_POSTAL_ADDRESS` is configured. Unexpired confirmation links from the previous signup flow still work.
 
-The app attempts the welcome immediately after confirmation. With `CRON_SECRET` set, the Vercel cron checks for pending deliveries once a day during the 14:00 UTC hour, which fits the Hobby schedule. Retries stop within Resend’s idempotency window to protect against duplicate welcomes, so some failed sends may expire before the daily check. This flow applies to new confirmations.
+The app attempts the welcome immediately after signup. With `CRON_SECRET` set, the Vercel cron checks for pending deliveries once a day during the 14:00 UTC hour, which fits the Hobby schedule. Retries stop within Resend’s idempotency window to protect against duplicate welcomes, so some failed sends may expire before the daily check.
 
 ## Fountain water
 
@@ -72,7 +72,7 @@ On an existing installation, run `npm run db:deploy` followed by `npm run db:see
 
 The Product Lab records one changeable priority vote per browser. The dashboard reports Product Lab ballots separately from survey votes. Product segment rankings use the share of renewal respondents in each age-range and priority-concern group who chose the concept. A segment needs five responses to rank ahead of smaller samples.
 
-Survey completion uses matching survey starts as its denominator. Marketing opt-in is calculated among confirmed subscribers who are currently subscribed. CSV exports omit names, email addresses, raw feedback, and anonymous session identifiers.
+Survey completion uses matching survey starts as its denominator. Marketing opt-in is calculated among active waitlist members. CSV exports omit names, email addresses, raw feedback, and anonymous session identifiers.
 
 ## Generated photography
 

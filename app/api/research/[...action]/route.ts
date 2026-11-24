@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { assertOrigin, anonymousSession, hashToken, rateLimit, RequestError, secretToken, verifyChallenge } from "@/lib/security";
 import { requestKeySchema, requestSchemas } from "@/lib/requests";
 import { answerSchemas, consentVersion, surveyVersion } from "@/lib/survey";
-import { mailConfiguration, sendConfirmation } from "@/lib/mail";
+import { mailConfiguration } from "@/lib/mail";
 import { unsubscribeWaitlist } from "@/lib/waitlist-unsubscribe";
 import { deliverWaitlistWelcome } from "@/lib/waitlist-welcome";
 
@@ -101,41 +101,30 @@ const handlers: Handlers = {
     await rateLimit(headers, "waitlist-join", 12, hour);
     await verifyChallenge(token, website);
     await rateLimit(headers, "waitlist-address", 3, hour, email);
-    const mail = mailConfiguration();
-    const confirmation = secretToken();
-    const unsubscribe = secretToken();
+    mailConfiguration();
     const timestamp = new Date();
     const data = {
       firstName: firstName || null, marketingConsent, consentVersion, consentTimestamp: timestamp,
-      confirmationHash: hashToken(confirmation), confirmationExpiry: new Date(timestamp.getTime() + 48 * hour),
-      unsubscribeHash: hashToken(unsubscribe),
+      confirmedAt: timestamp, confirmationHash: null, confirmationExpiry: null,
+      unsubscribeHash: hashToken(secretToken()),
     };
-    const claimed = await db.$transaction(async tx => {
-      const inserted = await tx.waitlistSubscriber.createMany({
+    const welcomeId = await db.$transaction(async tx => {
+      const [inserted] = await tx.waitlistSubscriber.createManyAndReturn({
         skipDuplicates: true,
-        data: { ...data, email, source: tracking.source ?? "direct", campaign: tracking.campaign },
+        data: { ...data, email, source: tracking.source ?? "direct", campaign: tracking.campaign, welcomeQueuedAt: timestamp },
+        select: { id: true },
       });
-      if (inserted.count) return true;
-      const updated = await tx.waitlistSubscriber.updateMany({
-        where: {
-          email,
-          OR: [{ unsubscribedAt: { not: null } }, { confirmedAt: null, consentTimestamp: { lt: new Date(timestamp.getTime() - 60_000) } }],
-        },
-        data: { ...data, confirmedAt: null, unsubscribedAt: null },
+      if (inserted) return inserted.id;
+      const [updated] = await tx.waitlistSubscriber.updateManyAndReturn({
+        where: { email, OR: [{ unsubscribedAt: { not: null } }, { confirmedAt: null }] },
+        data: { ...data, unsubscribedAt: null, welcomeQueuedAt: null, welcomeAttemptedAt: null },
+        select: { id: true, welcomeSentAt: true },
       });
-      return updated.count > 0;
+      if (!updated || updated.welcomeSentAt) return null;
+      await tx.waitlistSubscriber.update({ where: { id: updated.id }, data: { welcomeQueuedAt: timestamp } });
+      return updated.id;
     });
-    if (claimed) {
-      try {
-        await sendConfirmation(mail, email, confirmation, unsubscribe);
-      } catch (error) {
-        await db.waitlistSubscriber.updateMany({
-          where: { email, confirmationHash: data.confirmationHash },
-          data: { confirmationHash: null, confirmationExpiry: null, consentTimestamp: new Date(0) },
-        });
-        throw error;
-      }
-    }
+    if (welcomeId) after(async () => { await deliverWaitlistWelcome(welcomeId); });
     return { ok: true };
   },
   async "waitlist/confirm"({ token }, headers) {
@@ -148,7 +137,7 @@ const handlers: Handlers = {
         select: { id: true, marketingConsent: true, welcomeSentAt: true },
       });
       if (!subscriber) {
-        throw new RequestError("This link has expired or has already been used. You can request a new link from the community page.", 404);
+        throw new RequestError("This link has expired or has already been used. You can join directly from the community page.", 404);
       }
       if (!subscriber.marketingConsent || subscriber.welcomeSentAt) return null;
 

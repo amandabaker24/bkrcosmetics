@@ -51,7 +51,7 @@ export function WaitlistForm() {
     void state.run({
       firstName: fields.get("firstName"), email: fields.get("email"),
       marketingConsent: fields.has("marketingConsent"), tracking: browserTracking(),
-    }, "Thank you for joining the founding community. If confirmation is needed, look for a link in your inbox.", () => track("waitlist_signup_completed"));
+    }, "You’re on the waitlist. Thank you for joining the founding community.", () => track("waitlist_signup_completed"));
   }
   if (state.status) return <Status {...state} />;
   return <form className="form-stack" onSubmit={onSubmit} onFocus={() => {
@@ -145,6 +145,6 @@ export function EmailPreference({ type }: {type: "confirm" | "unsubscribe"}) {
     <p>{confirm ? "Confirm your email address to complete your signup." : "Use the preferences link from your bkr email to unsubscribe."}</p>
     <Status error={error} status={status} />
     {!status && <Button type="submit" disabled={busy}>{busy ? "Saving…" : confirm ? "Confirm Email Address" : "Unsubscribe"}</Button>}
-    {!status && !error && <p className="small"><Link className="underlined" href={confirm ? "/community" : "/contact"}>{confirm ? "Request another confirmation link" : "Contact us for help"}</Link></p>}
+    {!status && !error && <p className="small"><Link className="underlined" href={confirm ? "/community" : "/contact"}>{confirm ? "Visit the waitlist" : "Contact us for help"}</Link></p>}
   </form>;
 }

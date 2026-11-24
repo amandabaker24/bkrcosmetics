@@ -194,8 +194,8 @@ export async function analytics(filters: Filters) {
     db.surveySession.findMany({ distinct: ["source"], select: { source: true }, orderBy: { source: "asc" } }),
     filters.product ? completedSurveys(reportQueries({ ...filters, product: undefined }).survey) : undefined,
   ]);
-  const verifiedSignups = waitlist.filter(row => row.confirmedAt);
-  const activeSignups = verifiedSignups.filter(row => !row.unsubscribedAt);
+  const joinedSignups = waitlist.filter(row => row.confirmedAt);
+  const activeSignups = joinedSignups.filter(row => !row.unsubscribedAt);
   const pendingSignups = waitlist.filter(row => !row.confirmedAt && !row.unsubscribedAt && +row.consentTimestamp > 0);
   const optedIn = activeSignups.filter(row => row.marketingConsent).length;
   const surveyVotes = rank(records.filter(row => row.surveyVersion === surveyVersion && row.answers.product !== "none").map(row => [productLabel(row.answers.product)]));
@@ -225,7 +225,7 @@ export async function analytics(filters: Filters) {
     testingInterest: rank(records.flatMap(({ answers }) => "testingInterest" in answers ? [[answers.testingInterest]] : [])),
     prices: prices.map(name => ({ name, count: priceCounts.get(name) ?? 0 })),
     surveyTimeline: overTime(records.map(row => row.completedAt)),
-    waitlistTimeline: overTime(verifiedSignups.map(row => row.createdAt)),
+    waitlistTimeline: overTime(joinedSignups.map(row => row.createdAt)),
     insights: insightRows(records),
     feedback: feedback.slice((page - 1) * 25, page * 25),
     feedbackCount: feedback.length,

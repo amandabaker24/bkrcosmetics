@@ -10,7 +10,6 @@ const retryWindow = 23 * 60 * minute;
 
 function eligible(now: Date): Prisma.WaitlistSubscriberWhereInput {
   return {
-    marketingConsent: true,
     confirmedAt: { not: null },
     unsubscribedAt: null,
     welcomeSentAt: null,
@@ -19,11 +18,10 @@ function eligible(now: Date): Prisma.WaitlistSubscriberWhereInput {
   };
 }
 
-const recipientFields = { id: true, email: true, unsubscribeHash: true } as const;
+const recipientFields = { id: true, email: true, unsubscribeHash: true, marketingConsent: true } as const;
 
 export async function deliverWaitlistWelcome(id: string): Promise<"sent" | "skipped" | "failed"> {
   const postalAddress = process.env.MARKETING_POSTAL_ADDRESS?.trim();
-  if (!postalAddress) return "skipped";
 
   try {
     const config = mailConfiguration();
@@ -36,17 +34,17 @@ export async function deliverWaitlistWelcome(id: string): Promise<"sent" | "skip
     if (!recipient) return "skipped";
 
     const active = await db.waitlistSubscriber.count({
-      where: { id, marketingConsent: true, unsubscribedAt: null, unsubscribeHash: recipient.unsubscribeHash },
+      where: { id, marketingConsent: recipient.marketingConsent, unsubscribedAt: null, unsubscribeHash: recipient.unsubscribeHash },
     });
     if (!active) return "skipped";
 
-    const result = await sendWelcome(config, recipient, postalAddress);
+    const result = await sendWelcome(config, recipient, recipient.marketingConsent ? postalAddress : undefined);
     if (result.error) {
       console.error(JSON.stringify({ event: "waitlist_welcome_failed", code: result.error.name }));
       return "failed";
     }
-    await db.waitlistSubscriber.update({
-      where: { id },
+    await db.waitlistSubscriber.updateMany({
+      where: { id, unsubscribeHash: recipient.unsubscribeHash, welcomeAttemptedAt: now, welcomeSentAt: null },
       data: { welcomeSentAt: new Date(), welcomeQueuedAt: null },
     });
     return "sent";

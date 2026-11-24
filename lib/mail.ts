@@ -10,20 +10,9 @@ export function mailConfiguration() {
   return { resend: new Resend(RESEND_API_KEY), from: EMAIL_FROM, base: new URL(APP_URL).origin };
 }
 
-export async function sendConfirmation(configuration: ReturnType<typeof mailConfiguration>, email: string, confirmation: string, unsubscribe: string) {
-  const { resend, from, base } = configuration;
-  const response = await resend.emails.send({
-    from,
-    to: email,
-    subject: "Confirm your bkr email address",
-    text: `Thank you for your interest in bkr. Confirm your email address for the founding community:\n\n${base}/community/confirm#${confirmation}\n\nThis link expires in 48 hours. You can manage your email preferences here:\n${base}/unsubscribe#${unsubscribe}`,
-  });
-  if (response.error) throw new RequestError("We couldn’t send your confirmation email. Please try again.", 503);
-}
-
 export type WelcomeRecipient = { id: string; email: string; unsubscribeHash: string };
 
-export function sendWelcome(configuration: ReturnType<typeof mailConfiguration>, recipient: WelcomeRecipient, postalAddress: string) {
+export function sendWelcome(configuration: ReturnType<typeof mailConfiguration>, recipient: WelcomeRecipient, marketingAddress?: string) {
   const { resend, from, base } = configuration;
   const token = welcomeUnsubscribeToken(recipient.id, recipient.unsubscribeHash);
   const unsubscribe = `${base}/unsubscribe#${token}`;
@@ -33,7 +22,7 @@ export function sendWelcome(configuration: ReturnType<typeof mailConfiguration>,
   return resend.emails.send({
     from,
     to: recipient.email,
-    ...collectiveWelcome(base, unsubscribe, postalAddress),
+    ...collectiveWelcome(base, unsubscribe, marketingAddress),
     headers: { "List-Unsubscribe": `<${oneClick.href}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
   }, { idempotencyKey: `bkr-waitlist-welcome/${recipient.id}` });
 }
