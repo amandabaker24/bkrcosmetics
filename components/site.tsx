@@ -27,7 +27,7 @@ export function Header() {
   }, [open]);
   if (path === "/admin" || path.startsWith("/admin/")) return null;
 
-  return <header className="site-header">
+  return <header className={path === "/" ? "site-header site-header-home" : "site-header"}>
     <div className="nav-shell">
       <Wordmark />
       <nav aria-label="Primary" className="desktop-nav">
