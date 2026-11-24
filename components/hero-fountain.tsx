@@ -8,14 +8,16 @@ import { FountainWater } from "./fountain-water";
 
 function FountainDrop({ progress, delay = 0 }: { progress: MotionValue<number>; delay?: number }) {
   const phase = useTransform(progress, value => value === 0 || value === 1 ? 0 : (value * 5 + 1 - delay) % 1);
-  const top = useTransform(phase, value => `${100 * value ** 1.45}%`);
+  const y = useTransform(phase, value => `${100 * value ** 1.45}%`);
   const opacity = useTransform(() => {
     const position = phase.get();
     if (progress.get() === 0 || progress.get() === 1) return 0;
     return Math.min(1, position * 10, (1 - position) * 10);
   });
 
-  return <motion.span className={delay ? "fountain-drop fountain-drop-small" : "fountain-drop"} style={{ top, opacity }} />;
+  return <motion.span className="fountain-drop-path" style={{ y, opacity }}>
+    <span className={delay ? "fountain-drop fountain-drop-small" : "fountain-drop"} />
+  </motion.span>;
 }
 
 export function HeroFountain({ children }: { children: ReactNode }) {
@@ -35,22 +37,38 @@ export function HeroFountain({ children }: { children: ReactNode }) {
     let frame = 0;
     let pinTop = 0;
     let travel = 1;
+    let lastFrame = 0;
+    const mobile = window.matchMedia("(max-width: 760px)");
     track.dataset.pinned = "";
 
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        const position = (pinTop - track.getBoundingClientRect().top) / travel;
+    const draw = (now: number) => {
+      frame = 0;
+      const position = (pinTop - track.getBoundingClientRect().top) / travel;
+      if (!mobile.matches || position <= 0 || position >= 1) {
         progress.set(Math.max(0, Math.min(1, position)));
-      });
+        lastFrame = 0;
+        return;
+      }
+
+      // Give the water time to settle before the sticky panel reaches its release point.
+      const target = Math.min(1, position / .92);
+      const elapsed = lastFrame ? Math.min(now - lastFrame, 32) : 16;
+      const value = progress.get() + (target - progress.get()) * (1 - Math.exp(-elapsed / 45));
+      const settled = Math.abs(target - value) < .001;
+      progress.set(settled ? target : value);
+      lastFrame = settled ? 0 : now;
+      if (!settled) schedule();
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(draw);
     };
 
     const measure = () => {
       const height = panel.getBoundingClientRect().height;
       // Tall layouts pin once the bottom of the artwork is in view.
-      pinTop = Math.min(0, window.innerHeight - height);
-      panel.style.setProperty("--fountain-pin-top", `${pinTop}px`);
+      panel.style.setProperty("--fountain-panel-height", `${height}px`);
+      pinTop = Number.parseFloat(window.getComputedStyle(panel).top) || 0;
       travel = Math.max(1, track.getBoundingClientRect().height - height);
       schedule();
     };
@@ -66,7 +84,7 @@ export function HeroFountain({ children }: { children: ReactNode }) {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", measure);
       delete track.dataset.pinned;
-      panel.style.removeProperty("--fountain-pin-top");
+      panel.style.removeProperty("--fountain-panel-height");
     };
   }, [progress, reduceMotion]);
 

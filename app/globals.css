@@ -61,7 +61,7 @@ p { color: var(--muted); }
 .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: clamp(565px, 48vw, 740px); background: var(--burgundy); }
 @media (prefers-reduced-motion: no-preference) {
   .hero-sequence .hero { min-height: max(100dvh, 565px); }
-  .hero-sequence[data-pinned] .hero { position: sticky; top: var(--fountain-pin-top, 0px); }
+  .hero-sequence[data-pinned] .hero { position: sticky; top: min(0px, calc(100dvh - var(--fountain-panel-height, 100dvh))); }
   .hero-sequence[data-pinned]::after { content: ""; display: block; height: clamp(18rem, 52svh, 31rem); }
 }
 .hero-copy { align-self: center; padding: clamp(3rem, 6vw, 7rem) clamp(2rem, 6.2vw, 8rem); }
@@ -93,8 +93,10 @@ p { color: var(--muted); }
   height: 4.7%;
   transform: translateX(-50%);
 }
+.fountain-drop-path { position: absolute; inset: 0; }
 .fountain-drop {
   position: absolute;
+  top: 0;
   left: 50%;
   width: clamp(2px, 55%, 5px);
   aspect-ratio: 1 / 1.85;
@@ -279,6 +281,10 @@ th { font-weight: 700; }
   .concept-copy { padding: 1rem; }
   .footer-main, .footer-bottom { flex-direction: column; gap: .85rem; }
   .chart-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .hero-sequence .hero { min-height: max(100svh, 565px); }
+  .hero-sequence[data-pinned] .hero { top: min(0px, calc(100svh - var(--fountain-panel-height, 100svh))); }
 }
 @media (max-width: 540px) {
   .steps, .concept-grid, .pillar-grid { grid-template-columns: 1fr; }
