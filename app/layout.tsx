@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import "@fontsource/cormorant-garamond/400.css";
-import "@fontsource/cormorant-garamond/400-italic.css";
-import "@fontsource/cormorant-garamond/500.css";
-import "@fontsource-variable/dm-sans";
+import "@fontsource/baskervville/latin-400.css";
+import "@fontsource/baskervville/latin-400-italic.css";
+import "@fontsource/baskervville/latin-500.css";
+import "@fontsource-variable/source-sans-3";
 import { Footer, Header } from "@/components/site";
 import { Analytics } from "@/components/analytics";
 import "./globals.css";
