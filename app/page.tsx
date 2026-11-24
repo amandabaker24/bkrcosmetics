@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConceptGrid } from "@/components/concepts";
 import { WaitlistForm } from "@/components/forms";
 import { HeroFountain } from "@/components/hero-fountain";
+import { questionKeys } from "@/lib/survey";
 
 const pillars = [
   { title: "Restore", body: "Support the skin’s moisture barrier and explore ways to help skin feel hydrated and comfortable.", Icon: Droplet },
@@ -28,9 +29,13 @@ export default function Home() {
         <h1>In pursuit of <em>renewal.</em></h1>
         <p className="hero-subheading">Inspired by an age-old pursuit. Informed by modern skin science.</p>
         <p>A new approach to skin restoration, visible signs of aging, and lasting skin health.</p>
-        <div className="hero-actions">
-          <Button asChild><Link href="/skin-discovery">Be Part of the Discovery</Link></Button>
-          <Button asChild variant="text"><Link href="#vision">Discover Our Vision</Link></Button>
+        <div className="hero-cta">
+          <p>Your answers will help us decide which skincare concept to develop first.</p>
+          <div className="hero-actions">
+            <Button asChild><Link href="/skin-discovery">Start the Skincare Survey</Link></Button>
+            <Button asChild variant="text"><Link href="#vision">Discover Our Vision</Link></Button>
+          </div>
+          <p className="small">{questionKeys.length} questions · No account required</p>
         </div>
       </div>
     </HeroFountain>
@@ -76,7 +81,7 @@ export default function Home() {
             <p>{body}</p>
           </Reveal>)}
         </div>
-        <Reveal className="center"><Button asChild><Link href="/skin-discovery">Start Skin Discovery</Link></Button></Reveal>
+        <Reveal className="center"><Button asChild><Link href="/skin-discovery">Start the Skincare Survey</Link></Button></Reveal>
       </div>
     </section>
     <section className="section-pad wrap home-lab">

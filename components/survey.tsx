@@ -105,11 +105,11 @@ export function DiscoverySurvey() {
     <div>
       <Eyebrow>Skin discovery</Eyebrow><h1>Let’s Talk About <em>Your Skin.</em></h1>
       <p>Tell us about your routine, the textures you love, and what you want from skincare. Your answers will help us decide what to develop first.</p>
-      <p className="small">{questionKeys.length} questions · No account required</p>
       <form onSubmit={start} className="form-stack">
         {challenge.fields}
         {error && <p className="form-error" role="alert">{error}</p>}
-        <Button type="submit" disabled={busy}>{busy ? "Opening survey…" : "Start Your Skin Discovery"}</Button>
+        <Button type="submit" disabled={busy}>{busy ? "Opening survey…" : "Start the Skincare Survey"}</Button>
+        <p className="small">{questionKeys.length} questions · No account required</p>
       </form>
     </div>
     <div className="texture-image"><Image src="/images/texture.webp" alt="A pearlescent skincare texture in warm light" fill loading="eager" sizes="(max-width: 760px) 100vw, 47vw" /></div>

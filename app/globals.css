@@ -73,7 +73,9 @@ p { color: var(--muted); }
 .hero h1 { margin: .24em 0 .28em; font-size: clamp(3.2rem, 6vw, 6.5rem); line-height: 1.04; }
 .hero-copy > p:not(.eyebrow) { max-width: 28.5rem; font-size: clamp(.98rem, 1.2vw, 1.1rem); line-height: 1.7; }
 .hero-copy > .hero-subheading { color: var(--ink); font-weight: 600; margin-bottom: .45rem; }
-.hero-actions { display: flex; align-items: center; gap: 1.35rem; flex-wrap: wrap; margin-top: 1.8rem; }
+.hero-cta { margin-top: 1.5rem; }
+.hero-cta > p { max-width: 28.5rem; }
+.hero-actions { display: flex; align-items: center; gap: 1.35rem; flex-wrap: wrap; margin-block: .65rem .45rem; }
 .hero-image { position: relative; min-width: 0; overflow: hidden; container-type: size; background: var(--burgundy-deep); }
 /* Keep the water effects aligned to the artwork when the hero crops on narrower screens. */
 .fountain-scene {
